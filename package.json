@@ -33,7 +33,8 @@
     "foundation": "./app/bower_components/foundation/js/foundation.js",
     "fastclick": "./app/bower_components/fastclick/lib/fastclick.js",
     "jquery.cookie": "./app/bower_components/jquery.cookie/jquery.cookie.js",
-    "jquery.placeholder": "./app/bower_components/jquery-placeholder/jquery.placeholder.js"
+    "jquery.placeholder": "./app/bower_components/jquery-placeholder/jquery.placeholder.js",
+    "jquery.tablesorter": "./app/bower_components/jquery.tablesorter/js/jquery.tablesorter.js"
   },
   "browserify-shim": {
     "jquery": {
@@ -44,7 +45,13 @@
     },
     "foundation": {
       "exports": "foundation"
-    }
+    },
+    "jquery.tablesorter": {
+      "exports": "tablesorter",
+      "depends": [
+        "jquery:$"
+      ]
+    }    
   },
   "dependencies": {
     "backbone": "^1.1.2",

@@ -4,7 +4,8 @@
   "dependencies": {
     "modernizr": "latest",
     "foundation": "latest",
-    "fontawesome": "latest"
+    "fontawesome": "latest",
+    "jquery.tablesorter": "latest"
   },
   "overrides": {
     "fontawesome": {

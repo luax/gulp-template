@@ -1,0 +1,37 @@
+extends ../layouts/default
+
+block head
+  title Test
+  link(rel='stylesheet', href='/styles/second.css')
+
+
+block content
+  .large-12.columns
+    h1 Test
+    table#table
+      thead
+        tr
+         th(width='200') Table Header
+         th Table Header
+         th(width='150') Table Header
+         th(width='150') Table Header
+       tbody
+        tr
+         td 1
+         td This is longer content Donec id elit non mi porta gravida at eget metus.
+         td 1
+         td 1
+        tr
+         td 2
+         td
+          | This is longer Content Goes Here Donec id elit non mi porta gravida at eget metus.
+         td 2
+         td 2
+        tr
+         td Content Goes Here
+         td
+          | This is longer Content Goes Here Donec id elit non mi porta gravida at eget metus.
+         td Content Goes Here
+         td Content Goes Here
+
+  script(src='scripts/main-second.js')

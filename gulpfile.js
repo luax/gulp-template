@@ -40,14 +40,19 @@ gulp.task('common-scripts', function() {
 });
 
 gulp.task('scripts', ['jshint', 'common-scripts'], function () {
-  return browserify('./app/scripts/main.js')
-    .bundle()
-    .pipe(plugins.plumber())
-    .pipe(source('main.js'))
-    .pipe(buffer())
-    .pipe(plugins.uglify())
-    .pipe(gulp.dest('dist/scripts/'))
-    .pipe(plugins.livereload(lrserver));
+  [
+    'main.js',
+    'main-second.js'
+  ].forEach(function(s) {
+    return browserify('./app/scripts/' + s)
+      .bundle()
+      .pipe(plugins.plumber())
+      .pipe(source(s))
+      .pipe(buffer())
+      .pipe(plugins.uglify())
+      .pipe(gulp.dest('dist/scripts/'))
+      .pipe(plugins.livereload(lrserver));
+  });
 });
 
 gulp.task('jshint', function () {
