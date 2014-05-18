@@ -8,6 +8,7 @@ var gulp = require('gulp'),
     lrserver = require('tiny-lr')(),
     livereload = require('connect-livereload'),
     express = require('express'),
+    fs = require('fs'),
     livereloadPort = 35729,
     serverPort = 8000,
     server = express();
@@ -85,7 +86,7 @@ gulp.task('revision-files', ['scripts', 'sass'], function() {
 });
 
 gulp.task('revision', ['revision-files', 'html'], function(cb) {
-  var manifest = require('./rev-manifest'),
+  var manifest = JSON.parse(fs.readFileSync('./rev-manifest.json', 'utf-8')),
       html = gulp.src('dist/**/*.html');
 
   for (var key in manifest) {
