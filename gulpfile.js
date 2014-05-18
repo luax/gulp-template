@@ -1,4 +1,4 @@
-'use strict';
+ 'use strict';
 
 var gulp = require('gulp'),
     plugins = require('gulp-load-plugins')(),
@@ -12,8 +12,11 @@ var gulp = require('gulp'),
     serverPort = 8000,
     server = express();
 
+// Needed for revision task
+require('events').EventEmitter.prototype._maxListeners = 20; 
+
+server.use(livereload());
 server.use(express.static('./dist'));
-server.use(livereload({ port: livereloadPort }));
 
 gulp.task('sass', function () {
   return gulp.src('app/styles/**/*.scss')
@@ -24,35 +27,34 @@ gulp.task('sass', function () {
       precision: 10
     }))
     .pipe(gulp.dest('dist/styles'))
-    .pipe(plugins.livereload(lrserver));
 });
 
-gulp.task('common-scripts', function() {
-  return browserify('./app/scripts/common.js')
+gulp.task('common-scripts', ['jshint'], function(cb) {
+  browserify('./app/scripts/common.js')
     .transform('browserify-shim')
     .bundle()
     .pipe(plugins.plumber())
     .pipe(source('common.js'))
     .pipe(buffer())
     .pipe(plugins.uglify())
-    .pipe(gulp.dest('dist/scripts'))
-    .pipe(plugins.livereload(lrserver));
+    .pipe(gulp.dest('dist/scripts'));
+  cb();
 });
 
-gulp.task('scripts', ['jshint', 'common-scripts'], function () {
+gulp.task('scripts', ['common-scripts', 'jshint'], function (cb) {
   [
     'main.js',
     'main-second.js'
-  ].forEach(function(s) {
-    return browserify('./app/scripts/' + s)
+  ].map(function(s) {
+    browserify('./app/scripts/' + s)
       .bundle()
       .pipe(plugins.plumber())
       .pipe(source(s))
       .pipe(buffer())
       .pipe(plugins.uglify())
-      .pipe(gulp.dest('dist/scripts/'))
-      .pipe(plugins.livereload(lrserver));
+      .pipe(gulp.dest('dist/scripts/'));
   });
+  cb();
 });
 
 gulp.task('jshint', function () {
@@ -60,14 +62,38 @@ gulp.task('jshint', function () {
     .pipe(plugins.plumber())
     .pipe(plugins.jshint())
     .pipe(plugins.jshint.reporter(require('jshint-stylish')));
-
 });
 
-gulp.task('html', ['sass', 'scripts'], function() {
+gulp.task('html', function() {
   return gulp.src('app/templates/pages/**/*.jade')
     .pipe(plugins.plumber())
     .pipe(plugins.jade())
+    .pipe(gulp.dest('dist'));
+});
+
+gulp.task('revision-files', ['scripts', 'sass'], function() {
+  return gulp.src(['dist/styles/**/*.css', 'dist/scripts/**/*.js'], {base: 'dist'})
+    .pipe(plugins.clean())
+    .pipe(plugins.filter(function(file) {
+      return /.*\/[a-z\-]+\.(css|js)/.test(file.path)
+    }))
+    .pipe(plugins.plumber())
+    .pipe(plugins.rev())
     .pipe(gulp.dest('dist'))
+    .pipe(plugins.rev.manifest())
+    .pipe(gulp.dest('./'))
+});
+
+gulp.task('revision', ['revision-files', 'html'], function(cb) {
+  var manifest = require('./rev-manifest'),
+      html = gulp.src('dist/**/*.html');
+
+  for (var key in manifest) {
+    html.pipe(plugins.replace(key.replace(/.*\/\//, ''), manifest[key]));
+  }
+
+  return html
+    .pipe(gulp.dest('dist/'))
     .pipe(plugins.livereload(lrserver));
 });
 
@@ -79,7 +105,6 @@ gulp.task('images', function () {
       interlaced: true
     })))
     .pipe(gulp.dest('dist/images'))
-    .pipe(plugins.livereload((lrserver)));
 });
 
 gulp.task('fonts', function () {
@@ -87,7 +112,6 @@ gulp.task('fonts', function () {
     .pipe(plugins.filter('**/*.{eot,svg,ttf,woff}'))
     .pipe(plugins.flatten())
     .pipe(gulp.dest('dist/styles/fonts'))
-    .pipe(plugins.livereload((lrserver)));
 });
 
 gulp.task('extras', function () {
@@ -99,7 +123,7 @@ gulp.task('clean', function () {
   return gulp.src(['.tmp', 'dist'], { read: false }).pipe(plugins.clean());
 });
 
-gulp.task('serve', function () {
+gulp.task('serve', ['build'], function () {
   server.listen(serverPort);
   server.on('error', function(err) {
     console.error(err);
@@ -109,13 +133,14 @@ gulp.task('serve', function () {
   require('opn')('http://localhost:' + serverPort);
 });
 
-gulp.task('watch', ['build', 'serve'], function () {
+gulp.task('watch', ['serve'], function () {
   gulp.watch('app/templates/**/*.jade', ['html']);
   gulp.watch('app/styles/**/*.scss', ['sass']);
   gulp.watch('app/scripts/**/*.js', ['scripts']);
   gulp.watch('app/images/**/*', ['images']);
+  gulp.watch('app/**/*', ['revision']);
 });
 
-gulp.task('build', ['html', 'images', 'fonts', 'extras']);
+gulp.task('build', ['html', 'extras', 'revision', 'scripts', 'sass', 'images', 'fonts']);
 
 gulp.task('default', ['clean'], function () { gulp.start('build'); });
