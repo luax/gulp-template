@@ -27,7 +27,7 @@ gulp.task('sass', function () {
       style: 'compressed',
       precision: 10
     }))
-    .pipe(gulp.dest('dist/styles'))
+    .pipe(gulp.dest('dist/styles'));
 });
 
 gulp.task('common-scripts', ['jshint'], function(cb) {
@@ -76,16 +76,16 @@ gulp.task('revision-files', ['scripts', 'sass'], function() {
   return gulp.src(['dist/styles/**/*.css', 'dist/scripts/**/*.js'], {base: 'dist'})
     .pipe(plugins.clean())
     .pipe(plugins.filter(function(file) {
-      return /.*\/[a-z\-]+\.(css|js)/.test(file.path)
+      return /.*\/[a-z\-]+\.(css|js)/.test(file.path);
     }))
     .pipe(plugins.plumber())
     .pipe(plugins.rev())
     .pipe(gulp.dest('dist'))
     .pipe(plugins.rev.manifest())
-    .pipe(gulp.dest('./'))
+    .pipe(gulp.dest('./'));
 });
 
-gulp.task('revision', ['revision-files', 'html'], function(cb) {
+gulp.task('revision', ['revision-files', 'html'], function() {
   var manifest = JSON.parse(fs.readFileSync('./rev-manifest.json', 'utf-8')),
       html = gulp.src('dist/**/*.html');
 
@@ -105,14 +105,14 @@ gulp.task('images', function () {
       progressive: true,
       interlaced: true
     })))
-    .pipe(gulp.dest('dist/images'))
+    .pipe(gulp.dest('dist/images'));
 });
 
 gulp.task('fonts', function () {
   return plugins.bowerFiles()
     .pipe(plugins.filter('**/*.{eot,svg,ttf,woff}'))
     .pipe(plugins.flatten())
-    .pipe(gulp.dest('dist/styles/fonts'))
+    .pipe(gulp.dest('dist/styles/fonts'));
 });
 
 gulp.task('extras', function () {
